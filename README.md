@@ -1,80 +1,94 @@
 # Cadence
 
-An AI-powered marketing automation platform that transforms how marketers interact with Klaviyo. Built for the Klaviyo Winter 2026 Hackathon.
+An AI-powered marketing automation platform that transforms how marketers interact with Klaviyo.
 
 ## Problem Statement
 
-Email marketers face three critical challenges:
+Email marketers face three critical challenges that limit their effectiveness:
 
-1. **Complex Segmentation**: Creating targeted segments requires deep knowledge of Klaviyo's filter syntax and data model
-2. **Guesswork Timing**: Determining optimal send times is based on trial-and-error rather than data
-3. **Manual Flow Design**: Building automation flows is time-consuming and lacks intelligent recommendations
+1. **Complex Segmentation**: Creating targeted customer segments requires deep knowledge of Klaviyo's filter syntax and data model. Marketers often need developer support for sophisticated targeting.
 
-## Solution
+2. **Guesswork Timing**: Determining optimal send times is based on trial-and-error rather than data-driven insights. This leads to lower engagement rates and missed revenue opportunities.
 
-Cadence bridges the gap between marketing intent and technical execution through:
+3. **Manual Flow Design**: Building automation flows is time-consuming and lacks intelligent recommendations based on customer behavior patterns.
 
-- **Natural Language Segment Builder**: Describe your audience in plain English, and AI translates it into precise Klaviyo segments
-- **Optimal Send Time Predictor**: ML-powered analysis of engagement patterns visualized through an intuitive heatmap
-- **Smart Flow Recommendations**: AI-generated automation flows based on your customer data and industry best practices
-- **Campaign Performance Analysis**: Get AI-powered insights and actionable recommendations for every campaign
+These challenges create a gap between marketing intent and technical execution, slowing down campaigns and reducing their effectiveness.
 
-## Technical Architecture
+## Solution Overview
+
+Cadence bridges this gap through AI-powered features:
+
+- **Natural Language Segment Builder**: Describe your audience in plain English (e.g., "customers who bought shoes but never bought socks"), and AI translates it into precise Klaviyo segment filters with real-time preview and estimated size.
+
+- **Optimal Send Time Predictor**: ML-powered analysis of engagement patterns visualized through an intuitive heatmap showing the best hours and days to send.
+
+- **Smart Flow Recommendations**: AI-generated automation flow suggestions based on your customer data and industry best practices, with expected revenue estimates.
+
+- **Campaign Performance Analysis**: Get AI-powered insights and actionable recommendations for every campaign, including predicted open rates for subject line variations.
+
+- **Customer Profile Management**: Browse and manage customer profiles with activity timelines and quick actions.
+
+## Architecture / Design Decisions
 
 ```
-cadence/
-├── Frontend (React + Vite)
-│   ├── Dashboard - Key metrics and engagement trends
-│   ├── Segment Builder - AI-powered natural language segmentation
-│   ├── Flow Studio - Visual automation builder with recommendations
-│   ├── Analytics - Send time optimization and performance data
-│   ├── Campaigns - Subject line generator and analysis
-│   └── Profiles - Customer management and activity tracking
-│
-├── Backend (Node.js + Express)
-│   ├── Klaviyo API Integration layer
-│   ├── AI Service (OpenAI GPT-4)
-│   └── RESTful API endpoints
-│
-└── External Services
-    ├── Klaviyo APIs (Profiles, Segments, Campaigns, Flows, Metrics)
-    └── OpenAI GPT-4 (natural language processing)
+┌─────────────────────────────────────────────────────────────┐
+│                    Frontend (React + Vite)                   │
+│  Dashboard | Segments | Flows | Analytics | Campaigns | Profiles
+└─────────────────────────┬───────────────────────────────────┘
+                          │ REST API
+┌─────────────────────────▼───────────────────────────────────┐
+│                   Backend (Node.js + Express)                │
+│                                                              │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐  │
+│  │ API Routes   │  │ Klaviyo      │  │ AI Service       │  │
+│  │ /api/*       │  │ Service      │  │ (OpenAI GPT-4)   │  │
+│  └──────────────┘  └──────────────┘  └──────────────────┘  │
+└─────────────────────────┬───────────────────────────────────┘
+                          │
+          ┌───────────────┼───────────────┐
+          ▼               ▼               ▼
+    ┌──────────┐   ┌──────────┐   ┌──────────┐
+    │ Klaviyo  │   │ Klaviyo  │   │ OpenAI   │
+    │ APIs     │   │ Metrics  │   │ GPT-4    │
+    └──────────┘   └──────────┘   └──────────┘
 ```
 
-## Klaviyo Integration
+**Key Design Decisions:**
 
-This project deeply integrates with multiple Klaviyo APIs:
+1. **Demo Mode Fallback**: The application works fully without API keys by providing intelligent fallback responses. This ensures judges can test all features immediately.
 
-| API | Usage |
-|-----|-------|
-| Profiles API | Fetch customer data, display profile details, track activity |
-| Segments API | Create segments from AI-parsed natural language queries |
-| Campaigns API | List campaigns, retrieve performance metrics |
-| Flows API | Display existing flows, inform AI recommendations |
-| Metrics API | Power analytics dashboard and engagement trends |
-| Events API | Track custom events for behavior analysis |
+2. **Lazy OpenAI Initialization**: OpenAI client is initialized dynamically to prevent startup crashes when API key is missing.
 
-## Getting Started
+3. **Intelligent AI Fallbacks**: When OpenAI is unavailable, the AI service provides contextually relevant responses based on keyword analysis and marketing best practices.
 
-### Prerequisites
+4. **Unified Design System**: Custom CSS variables create a consistent, premium dark-mode UI across all pages without relying on external CSS frameworks.
 
-- Node.js 18 or higher
-- Klaviyo account with API access
-- OpenAI API key (optional - demo mode works without it)
+## Klaviyo API / SDK / MCP Usage
 
-### Installation
+| API | Endpoint | Usage |
+|-----|----------|-------|
+| Profiles API | `GET /api/profiles` | Fetch customer profiles, display in Profiles page, power segment previews |
+| Segments API | `GET /api/segments`, `POST /api/segments` | List existing segments, create new segments from AI-parsed queries |
+| Campaigns API | `GET /api/campaigns` | Retrieve campaign list and performance metrics for analysis |
+| Flows API | `GET /api/flows` | Display existing automation flows, inform AI recommendations |
+| Metrics API | `GET /api/metrics` | Power analytics dashboard, engagement trends, send time analysis |
+| Events API | `POST /api/events` | Track custom events for behavior analysis |
+
+**Integration approach**: All Klaviyo API calls go through a centralized service layer (`server/services/klaviyo.js`) that handles authentication, error handling, and response normalization.
+
+## Getting Started / Setup Instructions
 
 ```bash
 # Clone the repository
-git clone https://github.com/munishshah/cadence.git
-cd cadence
+git clone https://github.com/munish-shah/Cadence-Klaviyo.git
+cd Cadence-Klaviyo
 
 # Install dependencies
 npm install
 
-# Configure environment
+# Configure environment variables
 cp .env.example .env
-# Edit .env with your API keys
+# Edit .env with your API keys (optional - demo mode works without them)
 
 # Start development server
 npm run dev
@@ -82,103 +96,61 @@ npm run dev
 
 The application will be available at http://localhost:5173
 
-### Environment Variables
-
+**Environment Variables:**
 ```
-KLAVIYO_API_KEY=pk_your_key_here
+KLAVIYO_API_KEY=pk_your_private_key
 KLAVIYO_PUBLIC_KEY=your_public_key
-OPENAI_API_KEY=sk_your_key_here (optional)
+OPENAI_API_KEY=sk_your_openai_key (optional)
 ```
 
-## Features
+## Demo
+
+### Dashboard
+View key metrics (total profiles, open rate, click rate, revenue) with interactive charts showing engagement trends.
 
 ### AI Segment Builder
-- Natural language input for segment creation
-- Real-time preview with sample matching profiles
-- Estimated segment size calculation
-- One-click save to Klaviyo
+1. Navigate to "Segment Builder" in the sidebar
+2. Type a natural language description like "Customers who purchased in the last 30 days"
+3. Click "Generate Segment"
+4. Review the AI-generated filter conditions and sample matching profiles
+5. Click "Save to Klaviyo" to create the segment
+
+### Optimal Send Time
+1. Go to "Analytics"
+2. View the heatmap showing engagement probability by hour
+3. See recommended send times (e.g., 10:00, 14:00, 20:00 on Tuesday-Thursday)
+
+### Subject Line Generator
+1. Navigate to "Campaigns"
+2. Enter a campaign description in the AI Subject Line Generator
+3. Click "Generate" to receive 5 subject line variations with predicted open rates
 
 ### Flow Studio
-- Visual flow builder with drag-and-drop nodes
-- AI-generated flow recommendations with expected revenue
-- Integration with existing Klaviyo flows
-- Support for triggers, actions, delays, and conditional splits
+1. Go to "Flow Studio"
+2. View AI recommendations with expected revenue
+3. Click "Flow Builder" to see the visual drag-and-drop interface
 
-### Analytics Dashboard
-- Engagement trend visualization
-- AI-powered optimal send time heatmap
-- Channel distribution breakdown
-- Detailed performance metrics table
+## Testing / Error Handling
 
-### Campaign Manager
-- AI subject line generator with multiple styles
-- Campaign performance analysis with AI insights
-- Predicted open rates for generated subject lines
-- Top performer tracking
+- **Demo Mode**: Automatically activates when Klaviyo API keys are missing, providing sample data for all features
+- **AI Fallbacks**: Intelligent fallback responses when OpenAI is unavailable, based on keyword analysis
+- **Error Boundaries**: All API calls wrapped in try-catch with user-friendly error messages
+- **Input Validation**: Form inputs validated before API submission
+- **Loading States**: Spinner and loading text displayed during async operations
 
-### Profile Management
-- Searchable customer list
-- Detailed profile view with activity timeline
-- Lifetime value and order history
-- Quick actions for email and profile editing
+## Future Improvements / Stretch Goals
 
-## AI Usage Disclosure
-
-This project uses OpenAI's GPT-4 API for:
-- Converting natural language queries to Klaviyo segment filters
-- Generating email subject line variations
-- Predicting optimal send times based on engagement patterns
-- Creating personalized flow recommendations
-- Analyzing campaign performance
-
-When OpenAI is not configured, the system provides intelligent fallback responses based on marketing best practices.
-
-## Project Structure
-
-```
-├── index.html          # Application entry point
-├── package.json        # Dependencies and scripts
-├── vite.config.js      # Vite configuration with API proxy
-├── server/
-│   ├── index.js        # Express server setup
-│   ├── routes/
-│   │   └── api.js      # API endpoints
-│   └── services/
-│       ├── klaviyo.js  # Klaviyo API wrapper
-│       └── ai.js       # OpenAI integration
-└── src/
-    ├── main.jsx        # React entry point
-    ├── index.css       # Design system
-    ├── App.jsx         # Main app with routing
-    └── pages/
-        ├── Dashboard.jsx
-        ├── SegmentBuilder.jsx
-        ├── FlowStudio.jsx
-        ├── Analytics.jsx
-        ├── Campaigns.jsx
-        └── Profiles.jsx
-```
-
-## Demo Mode
-
-The application includes a comprehensive demo mode that activates when Klaviyo API keys are not configured. This allows:
-- Full UI exploration without live data
-- Testing of AI features with intelligent fallback responses
-- Sample data for all pages and features
-
-## Future Enhancements
-
-- Real-time segment size estimation via Klaviyo API
-- A/B test subject line integration
-- SMS and push notification flow support
-- Custom event tracking interface
-- Multi-account management
-- Webhook configuration UI
-
-## License
-
-MIT License - See LICENSE file for details.
+1. **Real Segment Size Estimation**: Query Klaviyo API to get actual profile counts for generated segments
+2. **A/B Test Integration**: Connect subject line generator directly to Klaviyo A/B testing
+3. **SMS Flow Support**: Extend flow builder to support SMS and push notification nodes
+4. **Webhook Configuration**: UI for setting up and managing Klaviyo webhooks
+5. **Multi-Account Support**: Manage multiple Klaviyo accounts from one interface
+6. **OAuth Implementation**: Full OAuth flow for secure third-party authorization
 
 ## Author
 
 Munish Shah - Klaviyo Winter 2026 Hackathon
+
+## License
+
+MIT License
