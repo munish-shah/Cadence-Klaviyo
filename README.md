@@ -151,6 +151,3 @@ View key metrics (total profiles, open rate, click rate, revenue) with interacti
 
 Munish Shah - Klaviyo Winter 2026 Hackathon
 
-## License
-
-MIT License
